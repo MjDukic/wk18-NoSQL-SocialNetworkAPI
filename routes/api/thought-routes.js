@@ -43,19 +43,38 @@ router.get('/:thoughtId', (req,res)=> {
 });
 
 //TODO: ROUTE TO UPDATE A THOUGHT
-router.put('/', (req,res)=> {
-
-})
+//uhhh having problems, routing to the wrong place maybe
+router.put('/', (req,res) => {
+    Thought.findOneAndUpdate({_id: req.params.thoughtId}, {
+        thoughtText: req.body.thoughtText,
+        username: req.body.username
+    },  (err, thought) => {
+        if(err) {
+            res.status(400).json(err)
+        } else {
+            res.status(200).json(thought)
+        }
+    })
+});
 
 //TODO: ROUTE TO DELETE A THOUGHT BASED ON THOUGHT ID
-router.delete('/:thoughtId', (req,res)=> {
 
-});
+router.delete('/:thoughtId', (req,res)=> {
+    Thought.findOneAndDelete({_id: req.params.thoughtId}, 
+    (err, thought) => {
+        if(err) {
+            res.status(400).json(err)
+        } else {
+            res.status(200).json(thought)
+        }
+    })
+})
 
 //TODO: ROUTE TO ADD REACTION TO A THOUGHT
 router.post('/:thoughtId/reactions', (req,res)=> {
 
-});
+
+})
 
 //TODO: ROUTE TO DELETE A REACTION ON A THOUGHT
 router.delete('/:thoughtId/reactions/:reactionId', (req,res)=> {
