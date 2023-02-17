@@ -75,21 +75,20 @@ router.delete('/:thoughtId', (req,res)=> {
 
 //TODO: ROUTE TO ADD REACTION TO A THOUGHT
 //having problems
-
 router.post('/:thoughtId/reactions', (req,res)=> {
-    Reaction.create({
-        reactionId: req.params.reactionId,
-        reactionBody: req.body.reactionBody,
-        username: req.body.username
-    }, (err, reaction) => {
-        if(err) {
-            res.status(400).json(err)
-        } else {
-            res.status(200).json(reaction)
-        }
-    })
+    Thought.findOneAndUpdate(
+        {_id: req.params.thoughtId},
+        {$addToSet: {reactions: req.body}},
+        {new: true, runValidators: true})
+        .then((dbThoughtData)=> 
+            !dbThoughtData
+                ? res.status(404).json({message: 'No thought found with this id'})
+                : res.json(dbThoughtData)
+        )
+        .catch((err)=> res.status(500).json(err));
+});
 
-})
+
 // addReaction(req,res) {
 // Thought.findOneAndUpdate(
 //   {_id: req.params.thoughtId},
@@ -103,6 +102,18 @@ router.post('/:thoughtId/reactions', (req,res)=> {
 
 //TODO: ROUTE TO DELETE A REACTION ON A THOUGHT
 router.delete('/:thoughtId/reactions/:reactionId', (req,res)=> {
+    Thought.findOneAndUpdate(
+        {_id: req.params.thoughtId},
+        {$pull: {reactions: {reactionId: req.params.reactionId}}},
+        { runValidators: true, new: true }
+    )
+    .then((dbThoughtData)=> {
+        if(!dbThoughtData){
+            return res.status(404).json({message: 'No thought found with this id'})
+        }
+        res.json(dbThoughtData)
+    })
+    .catch((err)=> res.status(500).json(err));
 
 })
 

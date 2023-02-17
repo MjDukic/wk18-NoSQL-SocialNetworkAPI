@@ -18,7 +18,10 @@ router.get('/', (req,res)=> {
 router.post('/', (req,res)=> {
     User.create({
         username: req.body.username,
-        email: req.body.email
+        email: req.body.email,
+        thoughts: res.body.thoughts,
+        friends: res.body.friends
+
     }, (err, user) => {
         if(err) {
             res.status(400).json(err)
