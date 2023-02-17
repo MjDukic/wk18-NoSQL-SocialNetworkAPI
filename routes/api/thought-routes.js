@@ -5,14 +5,14 @@ const { Thought, Reaction} = require('../../models')
 
 //TODO: ROUTE TO GET ALL THOUGHTS
 //needed to do a post before get to have something show up..why
-router.get('/', async (req,res)=> {
+router.get('/', (req,res)=> {
     Thought.find({}, (err, thoughts) => {
         if(err) {
             res.status(400).json(err)
         } else {
             res.status(200).json(thoughts)
         }
-    }).populate("reactions")
+    })
 });
 
 //TODO: ROUTE TO CREATE A NEW THOUGHT
