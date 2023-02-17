@@ -5,14 +5,14 @@ const { Thought, Reaction} = require('../../models')
 
 //TODO: ROUTE TO GET ALL THOUGHTS
 //needed to do a post before get to have something show up..why
-router.get('/', (req,res)=> {
+router.get('/', async (req,res)=> {
     Thought.find({}, (err, thoughts) => {
         if(err) {
             res.status(400).json(err)
         } else {
             res.status(200).json(thoughts)
         }
-    })
+    }).populate("reactions")
 });
 
 //TODO: ROUTE TO CREATE A NEW THOUGHT
@@ -30,8 +30,6 @@ router.post('/', (req,res)=> {
     })
 });
 
-//
-
 //TODO: ROUTE TO GET SINGLE THOUGHT BASED ON THOUGHT ID
 router.get('/:thoughtId', (req,res)=> {
     Thought.findOne({_id: req.params.thoughtId}, (err, thought) => {
@@ -40,11 +38,10 @@ router.get('/:thoughtId', (req,res)=> {
         } else {
             res.status(200).json(thought)
         }
-    })
+    }).populate("reactions")
 });
 
 //TODO: ROUTE TO UPDATE A THOUGHT
-//uhhh having problems, routing to the wrong place maybe
 router.put('/:thoughtId', (req,res) => {
     Thought.findOneAndUpdate({_id: req.params.thoughtId}, {
         thoughtText: req.body.thoughtText,
@@ -58,10 +55,7 @@ router.put('/:thoughtId', (req,res) => {
     })
 });
 
-// {$addToSet: 
-
 //TODO: ROUTE TO DELETE A THOUGHT BASED ON THOUGHT ID
-
 router.delete('/:thoughtId', (req,res)=> {
     Thought.findOneAndDelete({_id: req.params.thoughtId}, 
     (err, thought) => {
@@ -74,11 +68,14 @@ router.delete('/:thoughtId', (req,res)=> {
 })
 
 //TODO: ROUTE TO ADD REACTION TO A THOUGHT
-//having problems
-router.post('/:thoughtId/reactions', (req,res)=> {
+router.post('/:thoughtId/reactions', async (req,res)=> {
+    //step 1 create the reaction
+    const reaction = await Reaction.create(req.body);
+    console.log(reaction)
+    //step 2 add the reaction to the thought
     Thought.findOneAndUpdate(
         {_id: req.params.thoughtId},
-        {$addToSet: {reactions: req.body}},
+        {$addToSet: {reactions: reaction._id}},
         {new: true, runValidators: true})
         .then((dbThoughtData)=> 
             !dbThoughtData
@@ -88,18 +85,6 @@ router.post('/:thoughtId/reactions', (req,res)=> {
         .catch((err)=> res.status(500).json(err));
 });
 
-
-// addReaction(req,res) {
-// Thought.findOneAndUpdate(
-//   {_id: req.params.thoughtId},
- //  {$addToSet: {reactions: req.body}},).then((dbThoughtData)=> {
-  //  if(!dbThoughtData){
-  //      return a 404
-  //  }
- // })
-   
-// }
-
 //TODO: ROUTE TO DELETE A REACTION ON A THOUGHT
 router.delete('/:thoughtId/reactions/:reactionId', (req,res)=> {
     Thought.findOneAndUpdate(
@@ -107,13 +92,12 @@ router.delete('/:thoughtId/reactions/:reactionId', (req,res)=> {
         {$pull: {reactions: {reactionId: req.params.reactionId}}},
         { runValidators: true, new: true }
     )
-    .then((dbThoughtData)=> {
-        if(!dbThoughtData){
-            return res.status(404).json({message: 'No thought found with this id'})
-        }
-        res.json(dbThoughtData)
-    })
-    .catch((err)=> res.status(500).json(err));
+    .then((dbThoughtData)=> 
+            !dbThoughtData
+             ? res.status(404).json({message: 'No thought found with this id'})
+             : res.json(dbThoughtData)
+    )
+        .catch((err)=> res.status(500).json(err));
 
 })
 
