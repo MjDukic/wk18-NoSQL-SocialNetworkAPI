@@ -69,13 +69,10 @@ router.delete('/:thoughtId', (req,res)=> {
 
 //TODO: ROUTE TO ADD REACTION TO A THOUGHT
 router.post('/:thoughtId/reactions', async (req,res)=> {
-    //step 1 create the reaction
-    const reaction = await Reaction.create(req.body);
-    console.log(reaction)
     //step 2 add the reaction to the thought
     Thought.findOneAndUpdate(
         {_id: req.params.thoughtId},
-        {$addToSet: {reactions: reaction._id}},
+        {$addToSet: {reactions: req.body}},
         {new: true, runValidators: true})
         .then((dbThoughtData)=> 
             !dbThoughtData
